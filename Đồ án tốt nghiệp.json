@@ -1,0 +1,431 @@
+{
+  "name": "Chatbot Zalo",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-zalo-user-v2.zaloUserLogin",
+      "typeVersion": 3,
+      "position": [
+        -2380,
+        -1240
+      ],
+      "id": "2a09d814-f377-47d7-b6e9-b64036a59cba",
+      "name": "Zalo Login Via QR Code",
+      "credentials": {
+        "n8nApi": {
+          "id": "7rtibBJsyEs7EITE",
+          "name": "Zalo Chatbox"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "events": [
+          "message",
+          "group_event",
+          "reaction",
+          "undo"
+        ]
+      },
+      "type": "n8n-nodes-zalo-user-v2.zaloUser",
+      "typeVersion": 2,
+      "position": [
+        -2360,
+        -940
+      ],
+      "id": "6f2955ed-d734-4a07-abf7-a6525bc82f93",
+      "name": "Zalo User Trigger",
+      "credentials": {
+        "zaloUserCredentialsApi": {
+          "id": "6Tp01t54EMTYDVH8",
+          "name": "Zalo Thành +84839783612 - 2025-07-27T01:10:57.403Z"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1XA9eQenb5SX-Q6Z0Xo--CezVxp8D4wJThGztzWdQEKI",
+          "mode": "list",
+          "cachedResultName": "Chatbot Fashion",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XA9eQenb5SX-Q6Z0Xo--CezVxp8D4wJThGztzWdQEKI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XA9eQenb5SX-Q6Z0Xo--CezVxp8D4wJThGztzWdQEKI/edit#gid=0"
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        -1220,
+        -740
+      ],
+      "id": "58fca389-eddb-45e6-850b-2ba47bb62b80",
+      "name": "FAQ",
+      "credentials": {
+        "googleApi": {
+          "id": "j5B1kNCtwLoEWO7F",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a024cf98-2c6d-44f1-93ec-b28efaa9a3fa",
+              "leftValue": "={{ $json.data.content }}",
+              "rightValue": "nhân viên hỗ trợ",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2120,
+        -940
+      ],
+      "id": "6ec271ad-16b9-4aee-a31c-4cfad394556b",
+      "name": "If",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.msgType }}",
+                    "rightValue": "chat.sticker",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "179e6457-a4bb-47b1-b055-dcb81f346598"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sticker"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b9071587-80e3-44db-afd3-73143a417ed4",
+                    "leftValue": "={{ $json.data.msgType }}",
+                    "rightValue": "webchat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1880,
+        -940
+      ],
+      "id": "2b7100fc-d65b-4226-9051-3c952fbca526",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "threadId": "={{ $('If').item.json.data.uidFrom }}",
+        "message": "Dạ, để kết nối với nhân viên hỗ trợ, anh chị vui lòng liên hệ sđt: 039 2928 104 hoặc gmail: hoangdmbh00859@fpt.edu.vn nhé ạ!"
+      },
+      "type": "n8n-nodes-zalo-user-v2.zaloUserInteract",
+      "typeVersion": 1,
+      "position": [
+        -1660,
+        -1140
+      ],
+      "id": "9b3c529f-7928-4312-b673-195259dd68eb",
+      "name": "Zalo User Interact",
+      "credentials": {
+        "zaloUserCredentialsApi": {
+          "id": "6Tp01t54EMTYDVH8",
+          "name": "Zalo Thành +84839783612 - 2025-07-27T01:10:57.403Z"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Zalo User Trigger').item.json.data.content }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Bạn là một Trợ lý ảo AI cho Phòng Công tác Sinh viên của Trường Cao đẳng Quốc tế BTEC FPT.\n\n🎯 Nhiệm vụ chính:\n\nTrả lời các câu hỏi chỉ liên quan đến thông tin đã được cung cấp trong tài liệu sau:\nhttps://docs.google.com/spreadsheets/d/1XA9eQenb5SX-Q6Z0Xo--CezVxp8D4wJThGztzWdQEKI/edit?gid=0#gid=0\n\n✅ Nguyên tắc trả lời:\n\nChỉ trả lời các câu hỏi có trong Google Sheet trên.\n\nTừ chối khéo léo các câu hỏi không liên quan bằng những câu như:\n\n\"Xin lỗi bạn, tôi không thể trả lời các câu hỏi không liên quan đến trường.\"\n\nTránh nói lan man, giữ tin nhắn dưới 1000 ký tự, chia thành nhiều tin nếu cần.\n\nKhông bịa đặt hoặc tự suy diễn câu trả lời. Nếu câu hỏi không có trong tài liệu, trả lời rõ là chưa hỗ trợ.\n\nlưu ý: nếu khách hàng muốn nt trực tiếp với người thật thì gửi đoạn chat này \"Dạ, em đang kết nối anh/chị với nhân viên hỗ trợ. Vui lòng đợi giây lát nhé!\" rồi gửi tn đến gmail người thật\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -1460,
+        -940
+      ],
+      "id": "535b5234-af9b-480e-926a-e20fa29af7d8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1560,
+        -740
+      ],
+      "id": "09173af2-990d-47f4-a062-be882046896a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gkNLd6JwVlLe4CuF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "threadId": "={{ $('Switch').item.json.data.uidFrom }}",
+        "message": "={{ $json.output }}"
+      },
+      "type": "n8n-nodes-zalo-user-v2.zaloUserInteract",
+      "typeVersion": 1,
+      "position": [
+        -1020,
+        -940
+      ],
+      "id": "5a8360bd-ce8e-4432-8b52-48c2d8e9c791",
+      "name": "Zalo User Interact1",
+      "credentials": {
+        "zaloUserCredentialsApi": {
+          "id": "6Tp01t54EMTYDVH8",
+          "name": "Zalo Thành +84839783612 - 2025-07-27T01:10:57.403Z"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "https://zjjqbtcxdmfvprgdqvla.supabase.co"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1400,
+        -740
+      ],
+      "id": "76d22ba3-dfcd-4219-95c1-814ff06d3e38",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "bAh32aU0eG9R6nsu",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=quangthanh130302@gmail.com",
+        "subject": "Khách hàng Zalo mới liên hệ",
+        "emailType": "text",
+        "message": "={{ $now }} Khách hàng {{ $('Zalo User Trigger').item.json.data.dName }} muốn nhắn tin trực tiếp.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1860,
+        -1320
+      ],
+      "id": "34dec83a-0218-433c-b883-9bfcf4745149",
+      "name": "Gmail",
+      "webhookId": "e2950761-2fb2-40ec-8ba5-eb82bb2b0609",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AXXkOLfweJd5NnUt",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "FAQ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zalo User Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Zalo User Interact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Zalo User Interact1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zalo User Interact1": {
+      "main": [
+        []
+      ]
+    },
+    "Zalo User Interact": {
+      "main": [
+        []
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Zalo User Interact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6debf68a-c11f-4558-90ae-1735dd00aa0e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1fd92e0894b25ae2fa611db3e6e9fc6a9e4d1350492cbc5c948a617929bf9acc"
+  },
+  "id": "T61RPggtoU0VDERc",
+  "tags": []
+}
