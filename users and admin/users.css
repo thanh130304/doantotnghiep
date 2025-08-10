@@ -1,0 +1,60 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+}
+
+.container-fluid {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1.display-5 {
+    font-weight: 700;
+    color: #343a40;
+}
+
+.user-icon {
+    width: 85px;
+    height: 50px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.table {
+    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    padding: 12px;
+}
+
+.table thead th {
+    background-color: #343a40;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+}
+
+.form-select {
+    max-width: 200px;
+}
