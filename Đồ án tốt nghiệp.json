@@ -182,7 +182,7 @@
     {
       "parameters": {
         "threadId": "={{ $('If').item.json.data.uidFrom }}",
-        "message": "Dạ, để kết nối với nhân viên hỗ trợ, anh chị vui lòng liên hệ sđt: 039 2928 104 hoặc gmail: hoangdmbh00859@fpt.edu.vn nhé ạ!"
+        "message": "Dạ, để kết nối với nhân viên hỗ trợ, anh chị vui lòng liên hệ sđt: 039 2928 104 hoặc gmail: quangthanh130302@gmail.com nhé ạ!"
       },
       "type": "n8n-nodes-zalo-user-v2.zaloUserInteract",
       "typeVersion": 1,
@@ -421,7 +421,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "6debf68a-c11f-4558-90ae-1735dd00aa0e",
+  "versionId": "88ee2e1c-6543-43b9-b251-615baaf09d40",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1fd92e0894b25ae2fa611db3e6e9fc6a9e4d1350492cbc5c948a617929bf9acc"
