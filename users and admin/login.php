@@ -3,7 +3,7 @@ session_start();
 $conn = new mysqli('localhost', 'root', '', 'btec_db');
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Kết nối thất bại: " . $conn->connect_error);
 }
 
 $login_error = '';
@@ -15,7 +15,8 @@ $languages = [
         'password_label' => 'Password',
         'login_button' => 'Login',
         'error_invalid_credentials' => 'Invalid email or phone number',
-        'error_invalid_password' => 'Invalid password'
+        'error_invalid_password' => 'Invalid password',
+        'forgot_password' => 'Forgot password?' // Thêm ngôn ngữ cho liên kết quên mật khẩu
     ],
     'vi' => [
         'title' => 'Đăng Nhập Quản Trị',
@@ -23,7 +24,8 @@ $languages = [
         'password_label' => 'Mật Khẩu',
         'login_button' => 'Đăng Nhập',
         'error_invalid_credentials' => 'Email hoặc số điện thoại không hợp lệ',
-        'error_invalid_password' => 'Mật khẩu không đúng'
+        'error_invalid_password' => 'Mật khẩu không đúng',
+        'forgot_password' => 'Quên mật khẩu?' // Thêm ngôn ngữ cho liên kết quên mật khẩu
     ]
 ];
 
@@ -48,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_input'])) {
             $_SESSION['admin_id'] = $admin['ID'];
             $_SESSION['admin_name'] = $admin['FullName'];
             $_SESSION['adminId'] = $admin['ID'];
-            header('Location: users.php');
+            $_SESSION['logged_in'] = true; // Thêm để đồng bộ với users.php
+            header("Location: users.php?lang=$selectedLang"); // Chuyển hướng kèm tham số ngôn ngữ
             exit();
         } else {
             $login_error = $languages[$selectedLang]['error_invalid_password'];
@@ -125,7 +128,7 @@ $conn->close();
             </div>
             <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md font-medium hover:bg-blue-700 transition duration-300"><?php echo $languages[$selectedLang]['login_button']; ?></button>
             <div class="mt-4 text-center">
-                <a href="restore.php" class="text-blue-600 hover:underline"><?php echo $selectedLang === 'en' ? 'Forgot password?' : 'Quên mật khẩu?'; ?></a>
+                <a href="restore.php" class="text-blue-600 hover:underline"><?php echo $languages[$selectedLang]['forgot_password']; ?></a>
             </div>
         </form>
     </div>

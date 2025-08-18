@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-// Kiểm tra đã đăng nhập chưa
-if (!isset($_SESSION['adminId'])) {
+// Kiểm tra trạng thái đăng nhập
+if (!isset($_SESSION['adminId']) || !isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     header("Location: login.php");
     exit();
 }
@@ -11,25 +11,30 @@ $adminId = intval($_SESSION['adminId']);
 
 $conn = new mysqli('localhost', 'root', '', 'btec_db');
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Kết nối thất bại: " . $conn->connect_error);
 }
 
 // Lấy thông tin admin theo id
-$sql = "SELECT FullName, PhoneNumber, Email, Avatar FROM admin WHERE id = $adminId LIMIT 1";
-$result = $conn->query($sql);
+$sql = "SELECT FullName, PhoneNumber, Email, Avatar FROM admin WHERE id = ? LIMIT 1";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $adminId);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result && $result->num_rows > 0) {
     $data = $result->fetch_assoc();
 } else {
+    $stmt->close();
     $conn->close();
     header("Location: login.php");
     exit();
 }
 
+$stmt->close();
 $conn->close();
 
 $defaultAvatar = 'https://haycafe.vn/wp-content/uploads/2022/02/Avatar-trang-den.png';
-$avatar = !empty($data['Avatar']) ? $data['Avatar'] : $defaultAvatar;
+$avatar = (!empty($data['Avatar']) && file_exists($data['Avatar'])) ? $data['Avatar'] : $defaultAvatar;
 
 // Language data
 $languages = [
@@ -40,7 +45,9 @@ $languages = [
         'email' => 'Email',
         'adjust_avatar' => 'Adjust Avatar',
         'cancel' => 'Cancel',
-        'save' => 'Save'
+        'save' => 'Save',
+        'error_file_save_failed' => 'Failed to save the avatar image.',
+        'error_db_update_failed' => 'Failed to update the avatar in the database.'
     ],
     'vi' => [
         'title' => 'Hồ Sơ Quản Trị',
@@ -49,11 +56,19 @@ $languages = [
         'email' => 'Email',
         'adjust_avatar' => 'Chỉnh Sửa Ảnh Đại Diện',
         'cancel' => 'Hủy',
-        'save' => 'Lưu'
+        'save' => 'Lưu',
+        'error_file_save_failed' => 'Không thể lưu ảnh đại diện.',
+        'error_db_update_failed' => 'Không thể cập nhật ảnh đại diện trong cơ sở dữ liệu.'
     ]
 ];
 
 $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
+if (!array_key_exists($selectedLang, $languages)) {
+    $selectedLang = 'en';
+}
+
+// Lấy thông báo lỗi nếu có
+$error = isset($_GET['error']) ? $_GET['error'] : '';
 ?>
 
 <!DOCTYPE html>
@@ -132,7 +147,7 @@ $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
         }
         .card {
             border-color: #007bff;
-            background-color: rgba(255, 255, 255, 0.9); /* Nền card trong suốt nhẹ để thấy background */
+            background-color: rgba(255, 255, 255, 0.9);
         }
         @media (max-width: 768px) {
             .card-body {
@@ -167,6 +182,11 @@ $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
             <div class="card-body d-flex align-items-start">
                 <!-- Thông tin căn trái -->
                 <div class="flex-grow-1 pe-4">
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?php echo $languages[$selectedLang][$error] ?? 'An error occurred.'; ?>
+                        </div>
+                    <?php endif; ?>
                     <div class="mb-3 mt-1">
                         <label class="form-label fw-bold"><?php echo $languages[$selectedLang]['full_name']; ?>:</label>
                         <p class="form-control-plaintext"><?php echo htmlspecialchars($data['FullName']); ?></p>
@@ -182,11 +202,11 @@ $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
                 </div>
 
                 <!-- Avatar bên phải -->
-                <form id="avatarForm" method="POST" action="update_avatar.php" class="m-0">
+                <form id="avatarForm" method="POST" action="update_avatar.php?lang=<?php echo $selectedLang; ?>" class="m-0">
                     <input type="file" id="avatarInput" accept="image/*" hidden>
                     <input type="hidden" name="croppedImage" id="croppedImageInput">
                     <div class="avatar-wrapper" onclick="document.getElementById('avatarInput').click()">
-                        <img src="<?php echo $avatar; ?>" alt="Avatar" class="rounded-circle" id="avatarDisplay">
+                        <img src="<?php echo htmlspecialchars($avatar); ?>" alt="Avatar" class="rounded-circle" id="avatarDisplay">
                         <div class="overlay"><?php echo $languages[$selectedLang]['adjust_avatar']; ?></div>
                     </div>
                 </form>
@@ -216,17 +236,18 @@ $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
     <script>
-        function changeLanguage() {
-            const lang = document.getElementById('language-select').value;
-            window.location.href = `?lang=${lang}`;
-        }
-
+        const languages = <?php echo json_encode($languages); ?>;
         let cropper;
         const avatarInput = document.getElementById('avatarInput');
         const cropImage = document.getElementById('cropImage');
         const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
         const croppedImageInput = document.getElementById('croppedImageInput');
         const avatarForm = document.getElementById('avatarForm');
+
+        function changeLanguage() {
+            const lang = document.getElementById('language-select').value;
+            window.location.href = `?lang=${lang}`;
+        }
 
         avatarInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files.length > 0) {
@@ -276,6 +297,21 @@ $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
                 cropper = null;
             }
         });
+
+        // Cập nhật giao diện ngôn ngữ
+        function updateLanguage(lang) {
+            document.querySelector('.card-header h3').textContent = languages[lang].title;
+            document.querySelector('label[for="full_name"]').textContent = languages[lang].full_name;
+            document.querySelector('label[for="phone_number"]').textContent = languages[lang].phone_number;
+            document.querySelector('label[for="email"]').textContent = languages[lang].email;
+            document.querySelector('.avatar-wrapper .overlay').textContent = languages[lang].adjust_avatar;
+            document.querySelector('#cropModalLabel').textContent = languages[lang].adjust_avatar;
+            document.querySelector('#cropCancelBtn').textContent = languages[lang].cancel;
+            document.querySelector('#cropSaveBtn').textContent = languages[lang].save;
+        }
+
+        // Gọi hàm updateLanguage khi tải trang
+        updateLanguage('<?php echo $selectedLang; ?>');
     </script>
 </body>
 </html>

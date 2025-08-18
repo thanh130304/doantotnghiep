@@ -1,8 +1,10 @@
 <?php
+session_start(); // Bắt đầu session để kiểm tra trạng thái đăng nhập
+
 $conn = new mysqli('localhost', 'root', '', 'btec_db');
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Kết nối thất bại: " . $conn->connect_error);
 }
 
 $sql = "SELECT id, full_name, phone_number, year_of_birth, facility, email, status FROM users";
@@ -112,7 +114,9 @@ $languages = [
         'select_facility' => 'Select facility',
         'manage_students' => 'Manage Students',
         'logout' => 'Logout',
-        'actions' => 'Actions'
+        'login' => 'Login',
+        'actions' => 'Actions',
+        'please_login' => 'Please login before accessing'
     ],
     'vi' => [
         'title' => 'Danh Sách Học Viên Đăng Ký Tư Vấn Zalo',
@@ -147,7 +151,9 @@ $languages = [
         'select_facility' => 'Chọn cơ sở',
         'manage_students' => 'Quản lý Học viên',
         'logout' => 'Đăng xuất',
-        'actions' => 'Hành động'
+        'login' => 'Đăng nhập',
+        'actions' => 'Hành động',
+        'please_login' => 'Vui lòng đăng nhập trước khi truy cập'
     ]
 ];
 
@@ -176,7 +182,7 @@ function mapStatus($status) {
     <style>
         .sidebar {
             min-height: 100vh;
-            background-color: #343a40; /* Reverted to original dark gray */
+            background-color: #343a40;
         }
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
@@ -326,8 +332,8 @@ function mapStatus($status) {
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php" data-lang-key="logout">
-                            <i class="fas fa-sign-out-alt me-2"></i><?php echo $languages[$selectedLang]['logout']; ?>
+                        <a class="nav-link" href="<?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'logout.php' : 'login.php'; ?>" data-lang-key="<?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'logout' : 'login'; ?>">
+                            <i class="fas fa-sign-<?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'out' : 'in'; ?>-alt me-2"></i><?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? $languages[$selectedLang]['logout'] : $languages[$selectedLang]['login']; ?>
                         </a>
                     </li>
                 </ul>
@@ -344,7 +350,7 @@ function mapStatus($status) {
                             <option value="en" <?php echo $selectedLang === 'en' ? 'selected' : ''; ?>>English</option>
                             <option value="vi" <?php echo $selectedLang === 'vi' ? 'selected' : ''; ?>>Tiếng Việt</option>
                         </select>
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        <button class="btn btn-sm btn-primary" id="add-student-btn">
                             <i class="fas fa-plus me-1"></i> <?php echo $languages[$selectedLang]['add_student']; ?>
                         </button>
                     </div>
@@ -571,6 +577,7 @@ function mapStatus($status) {
     <script>
         const languages = <?php echo json_encode($languages); ?>;
         let deleteStudentId = null;
+        const isLoggedIn = <?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'true' : 'false'; ?>;
 
         function updateLanguage(lang) {
             // Update main content
@@ -595,11 +602,20 @@ function mapStatus($status) {
             document.querySelector('#sortFilter option[value="name_asc"]').textContent = languages[lang].name_asc;
             document.querySelector('#sortFilter option[value="name_desc"]').textContent = languages[lang].name_desc;
             document.querySelector('#sortFilter option[value="year_asc"]').textContent = languages[lang].year_asc;
-            document.querySelector('button[data-bs-target="#addStudentModal"]').innerHTML = `<i class="fas fa-plus me-1"></i> ${languages[lang].add_student}`;
+            document.querySelector('#add-student-btn').innerHTML = `<i class="fas fa-plus me-1"></i> ${languages[lang].add_student}`;
 
             // Update sidebar navigation
             document.querySelector('a[data-lang-key="manage_students"]').innerHTML = `<i class="fas fa-users me-2"></i>${languages[lang].manage_students}`;
-            document.querySelector('a[data-lang-key="logout"]').innerHTML = `<i class="fas fa-sign-out-alt me-2"></i>${languages[lang].logout}`;
+            const loginLogoutLink = document.querySelector('a[data-lang-key="login"], a[data-lang-key="logout"]');
+            if (isLoggedIn) {
+                loginLogoutLink.setAttribute('data-lang-key', 'logout');
+                loginLogoutLink.innerHTML = `<i class="fas fa-sign-out-alt me-2"></i>${languages[lang].logout}`;
+                loginLogoutLink.href = 'logout.php';
+            } else {
+                loginLogoutLink.setAttribute('data-lang-key', 'login');
+                loginLogoutLink.innerHTML = `<i class="fas fa-sign-in-alt me-2"></i>${languages[lang].login}`;
+                loginLogoutLink.href = 'login.php';
+            }
 
             // Update status buttons in table
             document.querySelectorAll('.status-btn').forEach(function(btn) {
@@ -660,7 +676,9 @@ function mapStatus($status) {
             }
 
             // Update URL with selected language
-            history.pushState({}, '', `?lang=${lang}`);
+            const url = new URL(window.location);
+            url.searchParams.set('lang', lang);
+            history.pushState({}, '', url);
         }
 
         function updateStatus(option, id, lang) {
@@ -684,13 +702,13 @@ function mapStatus($status) {
                     btn.textContent = languages[lang][data.status] || languages[lang].unknown;
                     hiddenInput.value = data.status;
                 } else {
-                    console.error('Update failed:', data.error);
-                    alert('Failed to update status: ' + data.error);
+                    console.error('Cập nhật thất bại:', data.error);
+                    alert('Không thể cập nhật trạng thái: ' + data.error);
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating status.');
+                console.error('Lỗi:', error);
+                alert('Có lỗi xảy ra khi cập nhật trạng thái.');
             });
 
             option.parentElement.style.display = 'none';
@@ -719,7 +737,7 @@ function mapStatus($status) {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Lỗi:', error);
                 alert('Có lỗi xảy ra khi thêm học viên.');
             });
         }
@@ -756,7 +774,7 @@ function mapStatus($status) {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Lỗi:', error);
                 alert('Có lỗi xảy ra khi cập nhật học viên.');
             });
         }
@@ -782,7 +800,7 @@ function mapStatus($status) {
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Lỗi:', error);
                     alert('Có lỗi xảy ra khi xóa học viên.');
                 });
             }
@@ -803,9 +821,38 @@ function mapStatus($status) {
 
         document.addEventListener('DOMContentLoaded', function () {
             const userIcon = document.querySelector('.user-icon');
+            const addStudentBtn = document.getElementById('add-student-btn');
+
+            // Xử lý nhấn vào biểu tượng Profile
             if (userIcon) {
                 userIcon.addEventListener('click', function () {
-                    window.location.href = 'profile.php';
+                    const lang = document.getElementById('language-select').value;
+                    if (isLoggedIn) {
+                        window.location.href = 'profile.php';
+                    } else {
+                        if (confirm(languages[lang].please_login)) {
+                            window.location.href = 'login.php';
+                        }
+                    }
+                });
+            }
+
+            // Xử lý nhấn vào nút Add Student
+            if (addStudentBtn) {
+                addStudentBtn.addEventListener('click', function (event) {
+                    event.preventDefault(); // Ngăn hành vi mặc định
+                    const lang = document.getElementById('language-select').value;
+                    if (isLoggedIn) {
+                        // Mở modal thủ công nếu đã đăng nhập
+                        const addStudentModal = new bootstrap.Modal(document.getElementById('addStudentModal'));
+                        addStudentModal.show();
+                    } else {
+                        // Hiển thị thông báo nếu chưa đăng nhập
+                        if (confirm(languages[lang].please_login)) {
+                            window.location.href = 'login.php';
+                        }
+                        // Không làm gì nếu nhấn Hủy, modal sẽ không mở
+                    }
                 });
             }
 
