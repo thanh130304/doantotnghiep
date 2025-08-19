@@ -2,22 +2,23 @@
 session_start();
 
 // Kiểm tra trạng thái đăng nhập
-if (!isset($_SESSION['adminId']) || !isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     header("Location: login.php");
     exit();
 }
 
-$adminId = intval($_SESSION['adminId']);
+$userId = intval($_SESSION['user_id']);
+$role = $_SESSION['role'];
 
 $conn = new mysqli('localhost', 'root', '', 'btec_db');
 if ($conn->connect_error) {
     die("Kết nối thất bại: " . $conn->connect_error);
 }
 
-// Lấy thông tin admin theo id
-$sql = "SELECT FullName, PhoneNumber, Email, Avatar FROM admin WHERE id = ? LIMIT 1";
+// Lấy thông tin staff theo id
+$sql = "SELECT FullName, PhoneNumber, Email, Avatar FROM staff WHERE ID = ? LIMIT 1";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $adminId);
+$stmt->bind_param('i', $userId);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -39,7 +40,7 @@ $avatar = (!empty($data['Avatar']) && file_exists($data['Avatar'])) ? $data['Ava
 // Language data
 $languages = [
     'en' => [
-        'title' => 'Admin Profile',
+        'title' => 'Staff Profile',
         'full_name' => 'Full Name',
         'phone_number' => 'Phone Number',
         'email' => 'Email',
@@ -50,7 +51,7 @@ $languages = [
         'error_db_update_failed' => 'Failed to update the avatar in the database.'
     ],
     'vi' => [
-        'title' => 'Hồ Sơ Quản Trị',
+        'title' => 'Hồ Sơ Nhân Viên',
         'full_name' => 'Họ và Tên',
         'phone_number' => 'Số Điện Thoại',
         'email' => 'Email',
@@ -162,7 +163,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
 </head>
 <body>
     <!-- Nút Back -->
-    <a href="users.php?lang=<?php echo $selectedLang; ?>" id="backBtn" class="btn btn-danger">
+    <a href="<?php echo $role === 'manager' ? 'select.php' : 'users.php'; ?>?lang=<?php echo $selectedLang; ?>" id="backBtn" class="btn btn-danger">
         &larr; Back
     </a>
 

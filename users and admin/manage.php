@@ -7,7 +7,7 @@ if ($conn->connect_error) {
     die("Kết nối thất bại: " . $conn->connect_error);
 }
 
-$sql = "SELECT ID, FullName, Email, PhoneNumber, Password, role FROM admin";
+$sql = "SELECT ID, FullName, Email, PhoneNumber, Password, role FROM staff";
 $result = $conn->query($sql);
 
 // Lọc và sắp xếp
@@ -27,7 +27,7 @@ if (!empty($roleFilter) && $roleFilter !== 'all') {
     $params[] = $roleFilter;
 }
 
-$sql = "SELECT ID, FullName, Email, PhoneNumber, Password, role FROM admin";
+$sql = "SELECT ID, FullName, Email, PhoneNumber, Password, role FROM staff";
 if (!empty($whereClauses)) {
     $sql .= " WHERE " . implode(" AND ", $whereClauses);
 }
@@ -59,28 +59,28 @@ $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'vi';
 
 $languages = [
     'en' => [
-        'title' => 'Admin Management List',
+        'title' => 'Staff Management List',
         'full_name' => 'Full Name',
         'email' => 'Email',
         'phone_number' => 'Phone Number',
         'password' => 'Password',
         'role' => 'Role',
         'no_records' => 'No records found',
-        'add_admin' => 'Add Admin',
-        'edit_admin' => 'Edit Admin',
-        'signup_admin' => 'Sign Up Admin',
-        'confirm_delete' => 'Are you sure you want to delete this admin?',
+        'add_staff' => 'Add Staff',
+        'edit_staff' => 'Edit Staff',
+        'signup_staff' => 'Sign Up Staff',
+        'confirm_delete' => 'Are you sure you want to delete this staff?',
         'yes' => 'Yes',
         'no' => 'No',
         'cancel' => 'Cancel',
         'save' => 'Save',
         'update' => 'Update',
-        'search_placeholder' => 'Search admins...',
+        'search_placeholder' => 'Search staff...',
         'all_roles' => 'All roles',
         'sort_by' => 'Sort by',
         'name_asc' => 'Name A-Z',
         'name_desc' => 'Name Z-A',
-        'manage_admins' => 'Manage Admins',
+        'manage_staff' => 'Manage Staff',
         'logout' => 'Logout',
         'login' => 'Login',
         'signup' => 'Sign Up',
@@ -92,28 +92,28 @@ $languages = [
         're_enter_new_password' => 'Re-enter New Password'
     ],
     'vi' => [
-        'title' => 'Danh Sách Quản Lý Admin',
+        'title' => 'Danh Sách Quản Lý Nhân Viên',
         'full_name' => 'Họ và Tên',
         'email' => 'Email',
         'phone_number' => 'Số Điện Thoại',
         'password' => 'Mật khẩu',
         'role' => 'Vai Trò',
         'no_records' => 'Không tìm thấy bản ghi nào',
-        'add_admin' => 'Thêm Admin',
-        'edit_admin' => 'Chỉnh Sửa Admin',
-        'signup_admin' => 'Đăng ký Admin',
-        'confirm_delete' => 'Bạn có chắc chắn muốn xóa admin này?',
+        'add_staff' => 'Thêm Nhân Viên',
+        'edit_staff' => 'Chỉnh Sửa Nhân Viên',
+        'signup_staff' => 'Đăng ký Nhân Viên',
+        'confirm_delete' => 'Bạn có chắc chắn muốn xóa nhân viên này?',
         'yes' => 'Có',
         'no' => 'Không',
         'cancel' => 'Hủy',
         'save' => 'Lưu',
         'update' => 'Cập nhật',
-        'search_placeholder' => 'Tìm kiếm admin...',
+        'search_placeholder' => 'Tìm kiếm nhân viên...',
         'all_roles' => 'Tất cả vai trò',
         'sort_by' => 'Sắp xếp theo',
         'name_asc' => 'Họ tên A-Z',
         'name_desc' => 'Họ tên Z-A',
-        'manage_admins' => 'Quản lý Admin',
+        'manage_staff' => 'Quản lý Nhân Viên',
         'logout' => 'Đăng xuất',
         'login' => 'Đăng nhập',
         'signup' => 'Đăng ký',
@@ -218,8 +218,8 @@ $languages = [
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#" data-lang-key="manage_admins">
-                            <i class="fas fa-users me-2"></i><?php echo $languages[$selectedLang]['manage_admins']; ?>
+                        <a class="nav-link active" href="#" data-lang-key="manage_staff">
+                            <i class="fas fa-users me-2"></i><?php echo $languages[$selectedLang]['manage_staff']; ?>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -228,7 +228,7 @@ $languages = [
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#signupAdminModal" data-lang-key="signup">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#signupStaffModal" data-lang-key="signup">
                             <i class="fas fa-user-plus me-2"></i><?php echo $languages[$selectedLang]['signup']; ?>
                         </a>
                     </li>
@@ -262,8 +262,8 @@ $languages = [
                             <div class="col-md-4">
                                 <select class="form-select" id="roleFilter" onchange="applyFilters()">
                                     <option value="all" <?php echo empty($roleFilter) ? 'selected' : ''; ?>><?php echo $languages[$selectedLang]['all_roles']; ?></option>
-                                    <option value="admin" <?php echo $roleFilter === 'admin' ? 'selected' : ''; ?>>Admin</option>
                                     <option value="manager" <?php echo $roleFilter === 'manager' ? 'selected' : ''; ?>>Manager</option>
+                                    <option value="staff" <?php echo $roleFilter === 'staff' ? 'selected' : ''; ?>>Staff</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -277,7 +277,7 @@ $languages = [
                     </div>
                 </div>
 
-                <!-- Admin table -->
+                <!-- Staff table -->
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
@@ -306,7 +306,7 @@ $languages = [
                                                     <td><span class='password'>" . htmlspecialchars($row['Password']) . "</span></td>
                                                     <td><span class='role'>" . htmlspecialchars($row['role']) . "</span></td>
                                                     <td>
-                                                        <button type='button' class='btn btn-sm btn-edit' data-bs-toggle='modal' data-bs-target='#editAdminModal' onclick=\"loadAdminData('" . $row['ID'] . "', '" . htmlspecialchars($row['FullName']) . "', '" . htmlspecialchars($row['Email']) . "', '" . htmlspecialchars($row['PhoneNumber']) . "', '" . htmlspecialchars($row['Password']) . "', '" . htmlspecialchars($row['role']) . "')\">
+                                                        <button type='button' class='btn btn-sm btn-edit' data-bs-toggle='modal' data-bs-target='#editStaffModal' onclick=\"loadStaffData('" . $row['ID'] . "', '" . htmlspecialchars($row['FullName']) . "', '" . htmlspecialchars($row['Email']) . "', '" . htmlspecialchars($row['PhoneNumber']) . "', '" . htmlspecialchars($row['Password']) . "', '" . htmlspecialchars($row['role']) . "')\">
                                                             <i class='fas fa-edit'></i>
                                                         </button>
                                                         <button type='button' class='btn btn-sm btn-delete' data-bs-toggle='modal' data-bs-target='#deleteConfirmModal' onclick=\"setDeleteId('" . $row['ID'] . "')\">
@@ -336,131 +336,131 @@ $languages = [
         </div>
     </div>
 
-    <!-- Add Admin Modal -->
-    <div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+    <!-- Add Staff Modal -->
+    <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addAdminModalLabel"><?php echo $languages[$selectedLang]['add_admin']; ?></h5>
+                    <h5 class="modal-title" id="addStaffModalLabel"><?php echo $languages[$selectedLang]['add_staff']; ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addAdminForm">
+                    <form id="addStaffForm">
                         <div class="mb-3">
-                            <label for="adminName" class="form-label"><?php echo $languages[$selectedLang]['full_name']; ?></label>
-                            <input type="text" class="form-control" id="adminName" placeholder="<?php echo $languages[$selectedLang]['full_name']; ?>" required>
+                            <label for="staffName" class="form-label"><?php echo $languages[$selectedLang]['full_name']; ?></label>
+                            <input type="text" class="form-control" id="staffName" placeholder="<?php echo $languages[$selectedLang]['full_name']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="adminEmail" class="form-label"><?php echo $languages[$selectedLang]['email']; ?></label>
-                            <input type="email" class="form-control" id="adminEmail" placeholder="<?php echo $languages[$selectedLang]['email']; ?>" required>
+                            <label for="staffEmail" class="form-label"><?php echo $languages[$selectedLang]['email']; ?></label>
+                            <input type="email" class="form-control" id="staffEmail" placeholder="<?php echo $languages[$selectedLang]['email']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="adminPhone" class="form-label"><?php echo $languages[$selectedLang]['phone_number']; ?></label>
-                            <input type="tel" class="form-control" id="adminPhone" placeholder="<?php echo $languages[$selectedLang]['phone_number']; ?>" required>
+                            <label for="staffPhone" class="form-label"><?php echo $languages[$selectedLang]['phone_number']; ?></label>
+                            <input type="tel" class="form-control" id="staffPhone" placeholder="<?php echo $languages[$selectedLang]['phone_number']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="adminPassword" class="form-label"><?php echo $languages[$selectedLang]['password']; ?></label>
-                            <input type="password" class="form-control" id="adminPassword" placeholder="<?php echo $languages[$selectedLang]['password']; ?>" required>
+                            <label for="staffPassword" class="form-label"><?php echo $languages[$selectedLang]['password']; ?></label>
+                            <input type="password" class="form-control" id="staffPassword" placeholder="<?php echo $languages[$selectedLang]['password']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="adminRole" class="form-label"><?php echo $languages[$selectedLang]['role']; ?></label>
-                            <select class="form-select" id="adminRole" required>
-                                <option value="admin">Admin</option>
+                            <label for="staffRole" class="form-label"><?php echo $languages[$selectedLang]['role']; ?></label>
+                            <select class="form-select" id="staffRole" required>
                                 <option value="manager">Manager</option>
+                                <option value="staff">Staff</option>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $languages[$selectedLang]['cancel']; ?></button>
-                    <button type="button" class="btn btn-primary" onclick="addAdmin()"><?php echo $languages[$selectedLang]['save']; ?></button>
+                    <button type="button" class="btn btn-primary" onclick="addStaff()"><?php echo $languages[$selectedLang]['save']; ?></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Admin Modal -->
-    <div class="modal fade" id="editAdminModal" tabindex="-1" aria-labelledby="editAdminModalLabel" aria-hidden="true">
+    <!-- Edit Staff Modal -->
+    <div class="modal fade" id="editStaffModal" tabindex="-1" aria-labelledby="editStaffModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editAdminModalLabel"><?php echo $languages[$selectedLang]['edit_admin']; ?></h5>
+                    <h5 class="modal-title" id="editStaffModalLabel"><?php echo $languages[$selectedLang]['edit_staff']; ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editAdminForm">
-                        <input type="hidden" id="editAdminId">
+                    <form id="editStaffForm">
+                        <input type="hidden" id="editStaffId">
                         <div class="mb-3">
-                            <label for="editAdminName" class="form-label"><?php echo $languages[$selectedLang]['full_name']; ?></label>
-                            <input type="text" class="form-control" id="editAdminName" placeholder="<?php echo $languages[$selectedLang]['full_name']; ?>">
+                            <label for="editStaffName" class="form-label"><?php echo $languages[$selectedLang]['full_name']; ?></label>
+                            <input type="text" class="form-control" id="editStaffName" placeholder="<?php echo $languages[$selectedLang]['full_name']; ?>">
                         </div>
                         <div class="mb-3">
-                            <label for="editAdminEmail" class="form-label"><?php echo $languages[$selectedLang]['email']; ?></label>
-                            <input type="email" class="form-control" id="editAdminEmail" placeholder="<?php echo $languages[$selectedLang]['email']; ?>">
+                            <label for="editStaffEmail" class="form-label"><?php echo $languages[$selectedLang]['email']; ?></label>
+                            <input type="email" class="form-control" id="editStaffEmail" placeholder="<?php echo $languages[$selectedLang]['email']; ?>">
                         </div>
                         <div class="mb-3">
-                            <label for="editAdminPhone" class="form-label"><?php echo $languages[$selectedLang]['phone_number']; ?></label>
-                            <input type="tel" class="form-control" id="editAdminPhone" placeholder="<?php echo $languages[$selectedLang]['phone_number']; ?>">
+                            <label for="editStaffPhone" class="form-label"><?php echo $languages[$selectedLang]['phone_number']; ?></label>
+                            <input type="tel" class="form-control" id="editStaffPhone" placeholder="<?php echo $languages[$selectedLang]['phone_number']; ?>">
                         </div>
                         <div class="mb-3">
-                            <label for="editAdminPassword" class="form-label"><?php echo $languages[$selectedLang]['password']; ?></label>
-                            <input type="text" class="form-control" id="editAdminPassword" placeholder="<?php echo $languages[$selectedLang]['password']; ?>" readonly>
+                            <label for="editStaffPassword" class="form-label"><?php echo $languages[$selectedLang]['password']; ?></label>
+                            <input type="text" class="form-control" id="editStaffPassword" placeholder="<?php echo $languages[$selectedLang]['password']; ?>" readonly>
                         </div>
                         <div class="mb-3">
-                            <label for="editAdminRole" class="form-label"><?php echo $languages[$selectedLang]['role']; ?></label>
-                            <select class="form-select" id="editAdminRole">
-                                <option value="admin">Admin</option>
+                            <label for="editStaffRole" class="form-label"><?php echo $languages[$selectedLang]['role']; ?></label>
+                            <select class="form-select" id="editStaffRole">
                                 <option value="manager">Manager</option>
+                                <option value="staff">Staff</option>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $languages[$selectedLang]['cancel']; ?></button>
-                    <button type="button" class="btn btn-primary" onclick="updateAdmin()"><?php echo $languages[$selectedLang]['update']; ?></button>
+                    <button type="button" class="btn btn-primary" onclick="updateStaff()"><?php echo $languages[$selectedLang]['update']; ?></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Sign Up Admin Modal -->
-    <div class="modal fade" id="signupAdminModal" tabindex="-1" aria-labelledby="signupAdminModalLabel" aria-hidden="true">
+    <!-- Sign Up Staff Modal -->
+    <div class="modal fade" id="signupStaffModal" tabindex="-1" aria-labelledby="signupStaffModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="signupAdminModalLabel"><?php echo $languages[$selectedLang]['signup_admin']; ?></h5>
+                    <h5 class="modal-title" id="signupStaffModalLabel"><?php echo $languages[$selectedLang]['signup_staff']; ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="signupAdminForm">
+                    <form id="signupStaffForm">
                         <div class="mb-3">
-                            <label for="signupAdminName" class="form-label"><?php echo $languages[$selectedLang]['full_name']; ?></label>
-                            <input type="text" class="form-control" id="signupAdminName" placeholder="<?php echo $languages[$selectedLang]['full_name']; ?>" required>
+                            <label for="signupStaffName" class="form-label"><?php echo $languages[$selectedLang]['full_name']; ?></label>
+                            <input type="text" class="form-control" id="signupStaffName" placeholder="<?php echo $languages[$selectedLang]['full_name']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="signupAdminEmail" class="form-label"><?php echo $languages[$selectedLang]['email']; ?></label>
-                            <input type="email" class="form-control" id="signupAdminEmail" placeholder="<?php echo $languages[$selectedLang]['email']; ?>" required>
+                            <label for="signupStaffEmail" class="form-label"><?php echo $languages[$selectedLang]['email']; ?></label>
+                            <input type="email" class="form-control" id="signupStaffEmail" placeholder="<?php echo $languages[$selectedLang]['email']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="signupAdminPhone" class="form-label"><?php echo $languages[$selectedLang]['phone_number']; ?></label>
-                            <input type="tel" class="form-control" id="signupAdminPhone" placeholder="<?php echo $languages[$selectedLang]['phone_number']; ?>" required>
+                            <label for="signupStaffPhone" class="form-label"><?php echo $languages[$selectedLang]['phone_number']; ?></label>
+                            <input type="tel" class="form-control" id="signupStaffPhone" placeholder="<?php echo $languages[$selectedLang]['phone_number']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="signupAdminPassword" class="form-label"><?php echo $languages[$selectedLang]['password']; ?></label>
-                            <input type="password" class="form-control" id="signupAdminPassword" placeholder="<?php echo $languages[$selectedLang]['password']; ?>" required>
+                            <label for="signupStaffPassword" class="form-label"><?php echo $languages[$selectedLang]['password']; ?></label>
+                            <input type="password" class="form-control" id="signupStaffPassword" placeholder="<?php echo $languages[$selectedLang]['password']; ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="signupAdminRole" class="form-label"><?php echo $languages[$selectedLang]['role']; ?></label>
-                            <select class="form-select" id="signupAdminRole" required>
-                                <option value="admin">Admin</option>
+                            <label for="signupStaffRole" class="form-label"><?php echo $languages[$selectedLang]['role']; ?></label>
+                            <select class="form-select" id="signupStaffRole" required>
                                 <option value="manager">Manager</option>
+                                <option value="staff">Staff</option>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $languages[$selectedLang]['cancel']; ?></button>
-                    <button type="button" class="btn btn-primary" onclick="signupAdmin()"><?php echo $languages[$selectedLang]['save']; ?></button>
+                    <button type="button" class="btn btn-primary" onclick="signupStaff()"><?php echo $languages[$selectedLang]['save']; ?></button>
                 </div>
             </div>
         </div>
@@ -511,7 +511,7 @@ $languages = [
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $languages[$selectedLang]['no']; ?></button>
-                    <button type="button" class="btn btn-danger" onclick="deleteAdmin()"><?php echo $languages[$selectedLang]['yes']; ?></button>
+                    <button type="button" class="btn btn-danger" onclick="deleteStaff()"><?php echo $languages[$selectedLang]['yes']; ?></button>
                 </div>
             </div>
         </div>
@@ -520,7 +520,7 @@ $languages = [
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const languages = <?php echo json_encode($languages); ?>;
-        let deleteAdminId = null;
+        let deleteStaffId = null;
         const isLoggedIn = <?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'true' : 'false'; ?>;
 
         function updateLanguage(lang) {
@@ -534,13 +534,13 @@ $languages = [
             document.getElementById('change-password-btn').textContent = languages[lang].change_password;
             document.querySelector('#searchInput').placeholder = languages[lang].search_placeholder;
             document.querySelector('#roleFilter option[value="all"]').textContent = languages[lang].all_roles;
-            document.querySelector('#roleFilter option[value="admin"]').textContent = 'Admin';
             document.querySelector('#roleFilter option[value="manager"]').textContent = 'Manager';
+            document.querySelector('#roleFilter option[value="staff"]').textContent = 'Staff';
             document.querySelector('#sortFilter option[value=""]').textContent = languages[lang].sort_by;
             document.querySelector('#sortFilter option[value="name_asc"]').textContent = languages[lang].name_asc;
             document.querySelector('#sortFilter option[value="name_desc"]').textContent = languages[lang].name_desc;
 
-            document.querySelector('a[data-lang-key="manage_admins"]').innerHTML = `<i class="fas fa-users me-2"></i>${languages[lang].manage_admins}`;
+            document.querySelector('a[data-lang-key="manage_staff"]').innerHTML = `<i class="fas fa-users me-2"></i>${languages[lang].manage_staff}`;
             const loginLogoutLink = document.querySelector('a[data-lang-key="login"], a[data-lang-key="logout"]');
             if (isLoggedIn) {
                 loginLogoutLink.setAttribute('data-lang-key', 'logout');
@@ -553,50 +553,50 @@ $languages = [
             }
             document.querySelector('a[data-lang-key="signup"]').innerHTML = `<i class="fas fa-user-plus me-2"></i>${languages[lang].signup}`;
 
-            const addModal = document.getElementById('addAdminModal');
+            const addModal = document.getElementById('addStaffModal');
             if (addModal) {
-                addModal.querySelector('#addAdminModalLabel').textContent = languages[lang].add_admin;
-                addModal.querySelector('label[for="adminName"]').textContent = languages[lang].full_name;
-                addModal.querySelector('#adminName').placeholder = languages[lang].full_name;
-                addModal.querySelector('label[for="adminEmail"]').textContent = languages[lang].email;
-                addModal.querySelector('#adminEmail').placeholder = languages[lang].email;
-                addModal.querySelector('label[for="adminPhone"]').textContent = languages[lang].phone_number;
-                addModal.querySelector('#adminPhone').placeholder = languages[lang].phone_number;
-                addModal.querySelector('label[for="adminPassword"]').textContent = languages[lang].password;
-                addModal.querySelector('#adminPassword').placeholder = languages[lang].password;
-                addModal.querySelector('label[for="adminRole"]').textContent = languages[lang].role;
+                addModal.querySelector('#addStaffModalLabel').textContent = languages[lang].add_staff;
+                addModal.querySelector('label[for="staffName"]').textContent = languages[lang].full_name;
+                addModal.querySelector('#staffName').placeholder = languages[lang].full_name;
+                addModal.querySelector('label[for="staffEmail"]').textContent = languages[lang].email;
+                addModal.querySelector('#staffEmail').placeholder = languages[lang].email;
+                addModal.querySelector('label[for="staffPhone"]').textContent = languages[lang].phone_number;
+                addModal.querySelector('#staffPhone').placeholder = languages[lang].phone_number;
+                addModal.querySelector('label[for="staffPassword"]').textContent = languages[lang].password;
+                addModal.querySelector('#staffPassword').placeholder = languages[lang].password;
+                addModal.querySelector('label[for="staffRole"]').textContent = languages[lang].role;
                 addModal.querySelector('.modal-footer .btn-secondary').textContent = languages[lang].cancel;
                 addModal.querySelector('.modal-footer .btn-primary').textContent = languages[lang].save;
             }
 
-            const editModal = document.getElementById('editAdminModal');
+            const editModal = document.getElementById('editStaffModal');
             if (editModal) {
-                editModal.querySelector('#editAdminModalLabel').textContent = languages[lang].edit_admin;
-                editModal.querySelector('label[for="editAdminName"]').textContent = languages[lang].full_name;
-                editModal.querySelector('#editAdminName').placeholder = languages[lang].full_name;
-                editModal.querySelector('label[for="editAdminEmail"]').textContent = languages[lang].email;
-                editModal.querySelector('#editAdminEmail').placeholder = languages[lang].email;
-                editModal.querySelector('label[for="editAdminPhone"]').textContent = languages[lang].phone_number;
-                editModal.querySelector('#editAdminPhone').placeholder = languages[lang].phone_number;
-                editModal.querySelector('label[for="editAdminPassword"]').textContent = languages[lang].password;
-                editModal.querySelector('#editAdminPassword').placeholder = languages[lang].password;
-                editModal.querySelector('label[for="editAdminRole"]').textContent = languages[lang].role;
+                editModal.querySelector('#editStaffModalLabel').textContent = languages[lang].edit_staff;
+                editModal.querySelector('label[for="editStaffName"]').textContent = languages[lang].full_name;
+                editModal.querySelector('#editStaffName').placeholder = languages[lang].full_name;
+                editModal.querySelector('label[for="editStaffEmail"]').textContent = languages[lang].email;
+                editModal.querySelector('#editStaffEmail').placeholder = languages[lang].email;
+                editModal.querySelector('label[for="editStaffPhone"]').textContent = languages[lang].phone_number;
+                editModal.querySelector('#editStaffPhone').placeholder = languages[lang].phone_number;
+                editModal.querySelector('label[for="editStaffPassword"]').textContent = languages[lang].password;
+                editModal.querySelector('#editStaffPassword').placeholder = languages[lang].password;
+                editModal.querySelector('label[for="editStaffRole"]').textContent = languages[lang].role;
                 editModal.querySelector('.modal-footer .btn-secondary').textContent = languages[lang].cancel;
                 editModal.querySelector('.modal-footer .btn-primary').textContent = languages[lang].update;
             }
 
-            const signupModal = document.getElementById('signupAdminModal');
+            const signupModal = document.getElementById('signupStaffModal');
             if (signupModal) {
-                signupModal.querySelector('#signupAdminModalLabel').textContent = languages[lang].signup_admin;
-                signupModal.querySelector('label[for="signupAdminName"]').textContent = languages[lang].full_name;
-                signupModal.querySelector('#signupAdminName').placeholder = languages[lang].full_name;
-                signupModal.querySelector('label[for="signupAdminEmail"]').textContent = languages[lang].email;
-                signupModal.querySelector('#signupAdminEmail').placeholder = languages[lang].email;
-                signupModal.querySelector('label[for="signupAdminPhone"]').textContent = languages[lang].phone_number;
-                signupModal.querySelector('#signupAdminPhone').placeholder = languages[lang].phone_number;
-                signupModal.querySelector('label[for="signupAdminPassword"]').textContent = languages[lang].password;
-                signupModal.querySelector('#signupAdminPassword').placeholder = languages[lang].password;
-                signupModal.querySelector('label[for="signupAdminRole"]').textContent = languages[lang].role;
+                signupModal.querySelector('#signupStaffModalLabel').textContent = languages[lang].signup_staff;
+                signupModal.querySelector('label[for="signupStaffName"]').textContent = languages[lang].full_name;
+                signupModal.querySelector('#signupStaffName').placeholder = languages[lang].full_name;
+                signupModal.querySelector('label[for="signupStaffEmail"]').textContent = languages[lang].email;
+                signupModal.querySelector('#signupStaffEmail').placeholder = languages[lang].email;
+                signupModal.querySelector('label[for="signupStaffPhone"]').textContent = languages[lang].phone_number;
+                signupModal.querySelector('#signupStaffPhone').placeholder = languages[lang].phone_number;
+                signupModal.querySelector('label[for="signupStaffPassword"]').textContent = languages[lang].password;
+                signupModal.querySelector('#signupStaffPassword').placeholder = languages[lang].password;
+                signupModal.querySelector('label[for="signupStaffRole"]').textContent = languages[lang].role;
                 signupModal.querySelector('.modal-footer .btn-secondary').textContent = languages[lang].cancel;
                 signupModal.querySelector('.modal-footer .btn-primary').textContent = languages[lang].save;
             }
@@ -627,22 +627,22 @@ $languages = [
             history.pushState({}, '', url);
         }
 
-        function addAdmin() {
+        function addStaff() {
             const formData = new FormData();
-            formData.append('FullName', document.getElementById('adminName').value);
-            formData.append('Email', document.getElementById('adminEmail').value);
-            formData.append('PhoneNumber', document.getElementById('adminPhone').value);
-            formData.append('Password', document.getElementById('adminPassword').value);
-            formData.append('role', document.getElementById('adminRole').value);
+            formData.append('FullName', document.getElementById('staffName').value);
+            formData.append('Email', document.getElementById('staffEmail').value);
+            formData.append('PhoneNumber', document.getElementById('staffPhone').value);
+            formData.append('Password', document.getElementById('staffPassword').value);
+            formData.append('role', document.getElementById('staffRole').value);
 
-            fetch('add_admin_manager.php', {
+            fetch('add_staff_manager.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(languages['<?php echo $selectedLang; ?>'].add_admin + ' thành công!');
+                    alert(languages['<?php echo $selectedLang; ?>'].add_staff + ' thành công!');
                     location.reload();
                 } else {
                     alert('Thêm thất bại: ' + data.error);
@@ -650,26 +650,26 @@ $languages = [
             })
             .catch(error => {
                 console.error('Lỗi:', error);
-                alert('Có lỗi xảy ra khi thêm admin.');
+                alert('Có lỗi xảy ra khi thêm nhân viên.');
             });
         }
 
-        function signupAdmin() {
+        function signupStaff() {
             const formData = new FormData();
-            formData.append('FullName', document.getElementById('signupAdminName').value);
-            formData.append('Email', document.getElementById('signupAdminEmail').value);
-            formData.append('PhoneNumber', document.getElementById('signupAdminPhone').value);
-            formData.append('Password', document.getElementById('signupAdminPassword').value);
-            formData.append('role', document.getElementById('signupAdminRole').value);
+            formData.append('FullName', document.getElementById('signupStaffName').value);
+            formData.append('Email', document.getElementById('signupStaffEmail').value);
+            formData.append('PhoneNumber', document.getElementById('signupStaffPhone').value);
+            formData.append('Password', document.getElementById('signupStaffPassword').value);
+            formData.append('role', document.getElementById('signupStaffRole').value);
 
-            fetch('add_admin_manager.php', {
+            fetch('add_staff_manager.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(languages['<?php echo $selectedLang; ?>'].signup_admin + ' thành công!');
+                    alert(languages['<?php echo $selectedLang; ?>'].signup_staff + ' thành công!');
                     location.reload();
                 } else {
                     alert('Đăng ký thất bại: ' + data.error);
@@ -677,35 +677,35 @@ $languages = [
             })
             .catch(error => {
                 console.error('Lỗi:', error);
-                alert('Có lỗi xảy ra khi đăng ký admin.');
+                alert('Có lỗi xảy ra khi đăng ký nhân viên.');
             });
         }
 
-        function loadAdminData(id, full_name, email, phone_number, password, role) {
-            document.getElementById('editAdminId').value = id;
-            document.getElementById('editAdminName').value = full_name;
-            document.getElementById('editAdminEmail').value = email;
-            document.getElementById('editAdminPhone').value = phone_number;
-            document.getElementById('editAdminPassword').value = password;
-            document.getElementById('editAdminRole').value = role;
+        function loadStaffData(id, full_name, email, phone_number, password, role) {
+            document.getElementById('editStaffId').value = id;
+            document.getElementById('editStaffName').value = full_name;
+            document.getElementById('editStaffEmail').value = email;
+            document.getElementById('editStaffPhone').value = phone_number;
+            document.getElementById('editStaffPassword').value = password;
+            document.getElementById('editStaffRole').value = role;
         }
 
-        function updateAdmin() {
+        function updateStaff() {
             const formData = new FormData();
-            formData.append('id', document.getElementById('editAdminId').value);
-            formData.append('FullName', document.getElementById('editAdminName').value);
-            formData.append('Email', document.getElementById('editAdminEmail').value);
-            formData.append('PhoneNumber', document.getElementById('editAdminPhone').value);
-            formData.append('role', document.getElementById('editAdminRole').value);
+            formData.append('id', document.getElementById('editStaffId').value);
+            formData.append('FullName', document.getElementById('editStaffName').value);
+            formData.append('Email', document.getElementById('editStaffEmail').value);
+            formData.append('PhoneNumber', document.getElementById('editStaffPhone').value);
+            formData.append('role', document.getElementById('editStaffRole').value);
 
-            fetch('update_admin.php', {
+            fetch('update_staff.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(languages['<?php echo $selectedLang; ?>'].edit_admin + ' thành công!');
+                    alert(languages['<?php echo $selectedLang; ?>'].edit_staff + ' thành công!');
                     location.reload();
                 } else {
                     alert('Cập nhật thất bại: ' + data.error);
@@ -713,7 +713,7 @@ $languages = [
             })
             .catch(error => {
                 console.error('Lỗi:', error);
-                alert('Có lỗi xảy ra khi cập nhật admin.');
+                alert('Có lỗi xảy ra khi cập nhật nhân viên.');
             });
         }
 
@@ -760,15 +760,15 @@ $languages = [
         }
 
         function setDeleteId(id) {
-            deleteAdminId = id;
+            deleteStaffId = id;
         }
 
-        function deleteAdmin() {
-            if (deleteAdminId) {
-                fetch('delete_admin.php', {
+        function deleteStaff() {
+            if (deleteStaffId) {
+                fetch('delete_staff.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `id=${deleteAdminId}`
+                    body: `id=${deleteStaffId}`
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -781,7 +781,7 @@ $languages = [
                 })
                 .catch(error => {
                     console.error('Lỗi:', error);
-                    alert('Có lỗi xảy ra khi xóa admin.');
+                    alert('Có lỗi xảy ra khi xóa nhân viên.');
                 });
             }
         }

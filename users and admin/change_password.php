@@ -19,9 +19,9 @@ $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
 // Determine if input is email or phone number based on presence of '@'
 if (strpos($email_or_phone, '@') !== false) {
-    $sql = "UPDATE admin SET Password = ? WHERE Email = ?";
+    $sql = "UPDATE staff SET Password = ? WHERE Email = ?";
 } else {
-    $sql = "UPDATE admin SET Password = ? WHERE PhoneNumber = ?";
+    $sql = "UPDATE staff SET Password = ? WHERE PhoneNumber = ?";
 }
 
 $stmt = $conn->prepare($sql);

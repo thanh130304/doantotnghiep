@@ -580,7 +580,6 @@ function mapStatus($status) {
         const isLoggedIn = <?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'true' : 'false'; ?>;
 
         function updateLanguage(lang) {
-            // Update main content
             document.querySelector('h1.h2').textContent = languages[lang].title;
             document.querySelector('th[data-lang-key="full_name"]').textContent = languages[lang].full_name;
             document.querySelector('th[data-lang-key="phone_number"]').textContent = languages[lang].phone_number;
@@ -604,7 +603,6 @@ function mapStatus($status) {
             document.querySelector('#sortFilter option[value="year_asc"]').textContent = languages[lang].year_asc;
             document.querySelector('#add-student-btn').innerHTML = `<i class="fas fa-plus me-1"></i> ${languages[lang].add_student}`;
 
-            // Update sidebar navigation
             document.querySelector('a[data-lang-key="manage_students"]').innerHTML = `<i class="fas fa-users me-2"></i>${languages[lang].manage_students}`;
             const loginLogoutLink = document.querySelector('a[data-lang-key="login"], a[data-lang-key="logout"]');
             if (isLoggedIn) {
@@ -617,7 +615,6 @@ function mapStatus($status) {
                 loginLogoutLink.href = 'login.php';
             }
 
-            // Update status buttons in table
             document.querySelectorAll('.status-btn').forEach(function(btn) {
                 const status = btn.getAttribute('data-status');
                 btn.textContent = languages[lang][status] || languages[lang].unknown;
@@ -630,7 +627,6 @@ function mapStatus($status) {
                 `;
             });
 
-            // Update Add Student Modal
             const addModal = document.getElementById('addStudentModal');
             if (addModal) {
                 addModal.querySelector('#addStudentModalLabel').textContent = languages[lang].add_student;
@@ -648,7 +644,6 @@ function mapStatus($status) {
                 addModal.querySelector('.modal-footer .btn-primary').textContent = languages[lang].save;
             }
 
-            // Update Edit Student Modal
             const editModal = document.getElementById('editStudentModal');
             if (editModal) {
                 editModal.querySelector('#editStudentModalLabel').textContent = languages[lang].edit_student;
@@ -666,7 +661,6 @@ function mapStatus($status) {
                 editModal.querySelector('.modal-footer .btn-primary').textContent = languages[lang].update;
             }
 
-            // Update Delete Confirmation Modal
             const deleteModal = document.getElementById('deleteConfirmModal');
             if (deleteModal) {
                 deleteModal.querySelector('#deleteConfirmModalLabel').textContent = languages[lang].confirm_delete;
@@ -675,7 +669,6 @@ function mapStatus($status) {
                 deleteModal.querySelector('.modal-footer .btn-danger').textContent = languages[lang].yes;
             }
 
-            // Update URL with selected language
             const url = new URL(window.location);
             url.searchParams.set('lang', lang);
             history.pushState({}, '', url);
@@ -828,10 +821,10 @@ function mapStatus($status) {
                 userIcon.addEventListener('click', function () {
                     const lang = document.getElementById('language-select').value;
                     if (isLoggedIn) {
-                        window.location.href = 'profile.php';
+                        window.location.href = 'profile.php?lang=' + lang;
                     } else {
                         if (confirm(languages[lang].please_login)) {
-                            window.location.href = 'login.php';
+                            window.location.href = 'login.php?lang=' + lang;
                         }
                     }
                 });

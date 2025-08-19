@@ -8,10 +8,10 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $login_input = $_POST['login_input'] ?? ''; // Sử dụng login_input để nhận email hoặc số điện thoại
+    $login_input = $_POST['login_input'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    $stmt = $conn->prepare("SELECT ID, Email, Password, role FROM admin WHERE Email = ? OR PhoneNumber = ?");
+    $stmt = $conn->prepare("SELECT ID, Email, Password, role FROM staff WHERE Email = ? OR PhoneNumber = ?");
     $stmt->bind_param("ss", $login_input, $login_input);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['email'] = $user['Email'];
             $_SESSION['role'] = $user['role'];
             // Chuyển hướng dựa trên role
-            $redirect = ($user['role'] === 'admin') ? 'users.php' : 'manage.php';
+            $redirect = ($user['role'] === 'manager') ? 'select.php' : 'users.php';
             echo json_encode(['success' => true, 'redirect' => $redirect]);
         } else {
             echo json_encode(['success' => false, 'error' => 'Mật khẩu không đúng']);
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData();
-            formData.append('login_input', document.getElementById('login_input').value); // Sử dụng login_input thay vì email
+            formData.append('login_input', document.getElementById('login_input').value);
             formData.append('password', document.getElementById('password').value);
 
             fetch('login.php', {
