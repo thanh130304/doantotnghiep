@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['email'] = $user['Email'];
             $_SESSION['role'] = $user['role'];
             // Chuyển hướng dựa trên role
-            $redirect = ($user['role'] === 'manager') ? 'select.php' : 'users.php';
+            $redirect = ($user['role'] === 'manager') ? 'manage.php' : 'users.php';
             echo json_encode(['success' => true, 'redirect' => $redirect]);
         } else {
             echo json_encode(['success' => false, 'error' => 'Mật khẩu không đúng']);

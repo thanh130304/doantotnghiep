@@ -7,10 +7,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT id, full_name, phone_number, year_of_birth, facility, email, status FROM users";
-$result = $conn->query($sql);
-
-// Handle Save All button
+// Handle save all status updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_all'])) {
     $statusUpdates = [];
     foreach ($_POST as $key => $value) {
@@ -27,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_all'])) {
         $stmt->execute();
         $stmt->close();
     }
-    $result = $conn->query($sql);
+    $result = $conn->query("SELECT id, full_name, phone_number, year_of_birth, facility, email, status FROM users");
 }
 
 // Filter and sort
@@ -77,19 +74,6 @@ if (!empty($params)) {
 }
 $stmt->execute();
 $result = $stmt->get_result();
-
-function mapStatus($status)
-{
-    $statusMap = [
-        'not_contacted' => 'not_contacted',
-        'contacted' => 'contacted',
-        'interested' => 'interested',
-        'no_need' => 'no_need',
-        'unknown' => 'unknown'
-    ];
-    $status = strtolower(str_replace(' ', '_', $status));
-    return $statusMap[$status] ?? 'unknown';
-}
 ?>
 
 <!DOCTYPE html>
@@ -130,21 +114,6 @@ function mapStatus($status)
             background-color: #f8f9fa;
         }
 
-        .user-icon {
-            transition: filter 0.3s ease, transform 0.3s ease;
-            cursor: pointer;
-        }
-
-        .user-icon:hover {
-            filter: hue-rotate(90deg) saturate(2);
-            transform: scale(1.1);
-        }
-
-        .user-icon:active {
-            filter: hue-rotate(90deg) saturate(2) brightness(0.8);
-            transform: scale(1);
-        }
-
         .card {
             background-color: rgba(255, 255, 255, 0.9);
         }
@@ -173,54 +142,6 @@ function mapStatus($status)
         .table-container td {
             padding: 8px;
             border: 1px solid #dee2e6;
-        }
-
-        .dropdown .status-btn {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 5px 10px;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            min-width: 160px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-            margin-top: 2px;
-        }
-
-        .dropdown-content button {
-            color: #000;
-            padding: 8px 12px;
-            text-decoration: none;
-            display: block;
-            width: 100%;
-            text-align: left;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .dropdown-content button:hover {
-            background-color: #f0f0f0;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
         }
 
         .btn-excel {
@@ -278,7 +199,12 @@ function mapStatus($status)
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="users.php">
+                        <a class="nav-link" href="manage.php">
+                            <i class="fas fa-users me-2"></i>Manage Staff
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="student_manager.php">
                             <i class="fas fa-user-graduate me-2"></i>Manage Students
                         </a>
                     </li>
@@ -287,6 +213,11 @@ function mapStatus($status)
                             href="<?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'logout.php' : 'login.php'; ?>">
                             <i
                                 class="fas fa-sign-<?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'out' : 'in'; ?>-alt me-2"></i><?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'Logout' : 'Login'; ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#signupStudentModal">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up
                         </a>
                     </li>
                 </ul>
@@ -298,8 +229,6 @@ function mapStatus($status)
                     class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Student Management List</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <img src="https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png"
-                            alt="User Icon" class="img-fluid me-3 user-icon" style="max-height: 40px;" title="Profile">
                         <button class="btn btn-sm btn-primary" id="add-student-btn">
                             <i class="fas fa-plus me-1"></i>Add Student
                         </button>
@@ -322,11 +251,11 @@ function mapStatus($status)
                             </div>
                             <div class="col-md-4">
                                 <select class="form-select" id="statusFilter" onchange="applyFilters()">
-                                    <option value="all" <?php echo empty($statusFilter) ? 'selected' : ''; ?>>All statuses</option>
-                                    <option value="not_contacted" <?php echo $statusFilter === 'not_contacted' ? 'selected' : ''; ?>>Not contacted</option>
+                                    <option value="all" <?php echo empty($statusFilter) ? 'selected' : ''; ?>>All Statuses</option>
+                                    <option value="not_contacted" <?php echo $statusFilter === 'not_contacted' ? 'selected' : ''; ?>>Not Contacted</option>
                                     <option value="contacted" <?php echo $statusFilter === 'contacted' ? 'selected' : ''; ?>>Contacted</option>
                                     <option value="interested" <?php echo $statusFilter === 'interested' ? 'selected' : ''; ?>>Interested</option>
-                                    <option value="no_need" <?php echo $statusFilter === 'no_need' ? 'selected' : ''; ?>>No need</option>
+                                    <option value="no_need" <?php echo $statusFilter === 'no_need' ? 'selected' : ''; ?>>No Need</option>
                                     <option value="unknown" <?php echo $statusFilter === 'unknown' ? 'selected' : ''; ?>>Unknown</option>
                                 </select>
                             </div>
@@ -365,7 +294,6 @@ function mapStatus($status)
                                             <?php
                                             if ($result->num_rows > 0) {
                                                 while ($row = $result->fetch_assoc()) {
-                                                    $mappedStatus = mapStatus($row['status']);
                                                     echo "<tr data-id='" . $row['id'] . "'>
                                                         <td>" . $row['id'] . "</td>
                                                         <td><span class='full-name'>" . htmlspecialchars($row['full_name']) . "</span></td>
@@ -374,16 +302,14 @@ function mapStatus($status)
                                                         <td><span class='facility'>" . htmlspecialchars($row['facility']) . "</span></td>
                                                         <td><span class='email'>" . htmlspecialchars($row['email']) . "</span></td>
                                                         <td>
-                                                            <div class='dropdown'>
-                                                                <button class='status-btn' data-id='" . $row['id'] . "' data-status='" . htmlspecialchars($mappedStatus) . "'>" . ucwords(str_replace('_', ' ', $mappedStatus)) . "</button>
-                                                                <div class='dropdown-content'>
-                                                                    <button type='button' class='status-option' data-value='not_contacted' onclick=\"updateStatus(this, '" . $row['id'] . "')\">Not contacted</button>
-                                                                    <button type='button' class='status-option' data-value='contacted' onclick=\"updateStatus(this, '" . $row['id'] . "')\">Contacted</button>
-                                                                    <button type='button' class='status-option' data-value='interested' onclick=\"updateStatus(this, '" . $row['id'] . "')\">Interested</button>
-                                                                    <button type='button' class='status-option' data-value='no_need' onclick=\"updateStatus(this, '" . $row['id'] . "')\">No need</button>
-                                                                </div>
-                                                            </div>
-                                                            <input type='hidden' name='status_" . $row['id'] . "' value='" . $mappedStatus . "'>
+                                                            <select class='form-select form-select-sm status-select' data-id='" . $row['id'] . "' onchange=\"updateStatus(this, '" . $row['id'] . "')\">
+                                                                <option value='not_contacted' " . ($row['status'] === 'not_contacted' ? 'selected' : '') . ">Not Contacted</option>
+                                                                <option value='contacted' " . ($row['status'] === 'contacted' ? 'selected' : '') . ">Contacted</option>
+                                                                <option value='interested' " . ($row['status'] === 'interested' ? 'selected' : '') . ">Interested</option>
+                                                                <option value='no_need' " . ($row['status'] === 'no_need' ? 'selected' : '') . ">No Need</option>
+                                                                <option value='unknown' " . ($row['status'] === 'unknown' ? 'selected' : '') . ">Unknown</option>
+                                                            </select>
+                                                            <input type='hidden' name='status_" . $row['id'] . "' value='" . $row['status'] . "'>
                                                         </td>
                                                         <td>
                                                             <button type='button' class='btn btn-sm btn-edit' data-bs-toggle='modal' data-bs-target='#editStudentModal' onclick=\"loadStudentData('" . $row['id'] . "', '" . htmlspecialchars($row['full_name']) . "', '" . htmlspecialchars($row['phone_number']) . "', '" . htmlspecialchars($row['year_of_birth']) . "', '" . htmlspecialchars($row['facility']) . "', '" . htmlspecialchars($row['email']) . "')\">
@@ -406,8 +332,10 @@ function mapStatus($status)
                                 </div>
                                 <div class="button-container d-flex mt-3" id="button-container">
                                     <div>
-                                        <button type="button" id="export-excel" class="btn btn-excel">Export to Excel</button>
-                                        <button type="submit" name="save_all" class="btn btn-save-all ms-2">Save All</button>
+                                        <button type="button" id="export-excel"
+                                            class="btn btn-excel">Export to Excel</button>
+                                        <button type="submit" name="save_all"
+                                            class="btn btn-save-all ms-2">Save All</button>
                                     </div>
                                 </div>
                             </div>
@@ -444,7 +372,7 @@ function mapStatus($status)
                         <div class="mb-3">
                             <label for="facility" class="form-label">Facility</label>
                             <select class="form-select" id="facility" required>
-                                <option value="" disabled selected>Select facility</option>
+                                <option value="" disabled selected>Select Facility</option>
                                 <option value="Hà Nội">Hà Nội</option>
                                 <option value="TP.Hồ Chí Minh">TP.Hồ Chí Minh</option>
                                 <option value="Đà Nẵng">Đà Nẵng</option>
@@ -507,6 +435,56 @@ function mapStatus($status)
         </div>
     </div>
 
+    <!-- Sign Up Student Modal -->
+    <div class="modal fade" id="signupStudentModal" tabindex="-1" aria-labelledby="signupStudentModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signupStudentModalLabel">Sign Up Student</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="signupStudentForm">
+                        <div class="mb-3">
+                            <label for="signupStudentName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="signupStudentName" placeholder="Full Name"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupPhoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="signupPhoneNumber" placeholder="Phone Number"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupYearOfBirth" class="form-label">Year of Birth</label>
+                            <input type="number" class="form-control" id="signupYearOfBirth" placeholder="Year of Birth"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupFacility" class="form-label">Facility</label>
+                            <select class="form-select" id="signupFacility" required>
+                                <option value="" disabled selected>Select Facility</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="TP.Hồ Chí Minh">TP.Hồ Chí Minh</option>
+                                <option value="Đà Nẵng">Đà Nẵng</option>
+                                <option value="Cần Thơ">Cần Thơ</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="signupEmail" placeholder="Email" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="signupStudent()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
         aria-hidden="true">
@@ -532,13 +510,10 @@ function mapStatus($status)
         let deleteStudentId = null;
         const isLoggedIn = <?php echo isset($_SESSION['logged_in']) && $_SESSION['logged_in'] ? 'true' : 'false'; ?>;
 
-        function updateStatus(option, id) {
-            const btn = option.parentElement.previousElementSibling;
-            const newStatus = option.getAttribute('data-value');
+        function updateStatus(select, id) {
+            const newStatus = select.value;
             const hiddenInput = document.querySelector(`input[name='status_${id}']`);
 
-            btn.setAttribute('data-status', newStatus);
-            btn.textContent = newStatus === 'unknown' ? 'Unknown' : newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace('_', ' ');
             hiddenInput.value = newStatus;
 
             fetch('update_status.php', {
@@ -548,21 +523,15 @@ function mapStatus($status)
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        btn.setAttribute('data-status', data.status);
-                        btn.textContent = data.status === 'unknown' ? 'Unknown' : data.status.charAt(0).toUpperCase() + data.status.slice(1).replace('_', ' ');
-                        hiddenInput.value = data.status;
-                    } else {
+                    if (!data.success) {
                         console.error('Update failed:', data.error);
-                        alert('Failed to update status: ' + data.error);
+                        alert('Update failed: ' + data.error);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while updating status.');
+                    alert('Please login before accessing');
                 });
-
-            option.parentElement.style.display = 'none';
         }
 
         function addStudent() {
@@ -584,12 +553,40 @@ function mapStatus($status)
                         alert('Add Student successful!');
                         location.reload();
                     } else {
-                        alert('Add failed: ' + data.error);
+                        alert('Add Student failed: ' + data.error);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while adding student.');
+                    alert('Please login before accessing');
+                });
+        }
+
+        function signupStudent() {
+            const formData = new FormData();
+            formData.append('full_name', document.getElementById('signupStudentName').value);
+            formData.append('phone_number', document.getElementById('signupPhoneNumber').value);
+            formData.append('year_of_birth', document.getElementById('signupYearOfBirth').value);
+            formData.append('facility', document.getElementById('signupFacility').value);
+            formData.append('email', document.getElementById('signupEmail').value);
+            formData.append('status', 'unknown');
+
+            fetch('add_student.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Sign Up Student successful!');
+                        location.reload();
+                    } else {
+                        alert('Sign Up Student failed: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Please login before accessing');
                 });
         }
 
@@ -621,12 +618,12 @@ function mapStatus($status)
                         alert('Edit Student successful!');
                         location.reload();
                     } else {
-                        alert('Update failed: ' + data.error);
+                        alert('Edit Student failed: ' + data.error);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while updating student.');
+                    alert('Please login before accessing');
                 });
         }
 
@@ -644,7 +641,7 @@ function mapStatus($status)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Student deleted successfully!');
+                            alert('Delete successful!');
                             location.reload();
                         } else {
                             alert('Delete failed: ' + data.error);
@@ -652,9 +649,9 @@ function mapStatus($status)
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while deleting student.');
+                        alert('Please login before accessing');
                     });
-                }
+            }
         }
 
         function applyFilters() {
@@ -669,21 +666,7 @@ function mapStatus($status)
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            const userIcon = document.querySelector('.user-icon');
             const addStudentBtn = document.getElementById('add-student-btn');
-
-            // Handle click on Profile icon
-            if (userIcon) {
-                userIcon.addEventListener('click', function () {
-                    if (isLoggedIn) {
-                        window.location.href = 'profile.php';
-                    } else {
-                        if (confirm('Please login before accessing')) {
-                            window.location.href = 'login.php';
-                        }
-                    }
-                });
-            }
 
             // Handle click on Add Student button
             if (addStudentBtn) {
@@ -698,7 +681,6 @@ function mapStatus($status)
                         if (confirm('Please login before accessing')) {
                             window.location.href = 'login.php';
                         }
-                        // Do nothing if Cancel is clicked, modal won't open
                     }
                 });
             }
@@ -719,24 +701,20 @@ function mapStatus($status)
                 const rows = Array.from(table.querySelectorAll('tr'));
                 const data = [];
 
-                // Extract headers (excluding the last column: Actions)
                 const headers = Array.from(rows[0].querySelectorAll('th'))
                     .slice(0, -1)
                     .map(th => th.textContent);
 
-                // Extract row data (excluding the last column: Actions)
                 rows.slice(1).forEach(row => {
                     const cells = Array.from(row.querySelectorAll('td')).slice(0, -1);
-                    if (cells.length > 0) { // Skip empty rows (e.g., "No records found")
+                    if (cells.length > 0) {
                         const rowData = {};
                         headers.forEach((header, index) => {
                             let cellContent = cells[index].textContent.trim();
-                            // Capitalize status for export
-                            if (index === headers.length - 1) { // Status column
-                                const statusBtn = cells[index].querySelector('.status-btn');
-                                if (statusBtn) {
-                                    const statusValue = statusBtn.getAttribute('data-status');
-                                    cellContent = statusValue === 'unknown' ? 'Unknown' : statusValue.charAt(0).toUpperCase() + statusValue.slice(1).replace('_', ' ');
+                            if (index === headers.length - 1) {
+                                const statusSelect = cells[index].querySelector('.status-select');
+                                if (statusSelect) {
+                                    cellContent = statusSelect.options[statusSelect.selectedIndex].text;
                                 }
                             }
                             rowData[header] = cellContent;
@@ -745,7 +723,6 @@ function mapStatus($status)
                     }
                 });
 
-                // Create worksheet
                 const ws = XLSX.utils.json_to_sheet(data, { header: headers });
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
@@ -758,23 +735,6 @@ function mapStatus($status)
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            });
-
-            document.querySelectorAll('.status-btn').forEach(function (btn) {
-                btn.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    const dropdown = this.nextElementSibling;
-                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-                });
-            });
-
-            document.addEventListener('click', function (event) {
-                const dropdowns = document.querySelectorAll('.dropdown-content');
-                dropdowns.forEach(function (dropdown) {
-                    if (dropdown && !dropdown.contains(event.target) && !event.target.classList.contains('status-btn')) {
-                        dropdown.style.display = 'none';
-                    }
-                });
             });
         });
     </script>
