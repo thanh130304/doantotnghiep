@@ -1,77 +1,50 @@
 <?php
 session_start();
+
 $conn = new mysqli('localhost', 'root', '', 'btec_db');
 
 if ($conn->connect_error) {
-    die("Kết nối thất bại: " . $conn->connect_error);
+    die(json_encode(['success' => false, 'error' => 'Kết nối thất bại']));
 }
 
-$login_error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $login_input = $_POST['login_input'] ?? ''; // Sử dụng login_input để nhận email hoặc số điện thoại
+    $password = $_POST['password'] ?? '';
 
-$languages = [
-    'en' => [
-        'title' => 'Admin Login',
-        'login_input_label' => 'Email or Phone Number',
-        'password_label' => 'Password',
-        'login_button' => 'Login',
-        'error_invalid_credentials' => 'Invalid email or phone number',
-        'error_invalid_password' => 'Invalid password',
-        'forgot_password' => 'Forgot password?' // Thêm ngôn ngữ cho liên kết quên mật khẩu
-    ],
-    'vi' => [
-        'title' => 'Đăng Nhập Quản Trị',
-        'login_input_label' => 'Email hoặc Số Điện Thoại',
-        'password_label' => 'Mật Khẩu',
-        'login_button' => 'Đăng Nhập',
-        'error_invalid_credentials' => 'Email hoặc số điện thoại không hợp lệ',
-        'error_invalid_password' => 'Mật khẩu không đúng',
-        'forgot_password' => 'Quên mật khẩu?' // Thêm ngôn ngữ cho liên kết quên mật khẩu
-    ]
-];
-
-$selectedLang = isset($_POST['lang']) ? $_POST['lang'] : (isset($_GET['lang']) ? $_GET['lang'] : 'en');
-if (!array_key_exists($selectedLang, $languages)) {
-    $selectedLang = 'en';
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_input'])) {
-    $login_input = $_POST['login_input'];
-    $password = $_POST['password'];
-
-    $sql = "SELECT * FROM admin WHERE Email = ? OR PhoneNumber = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('ss', $login_input, $login_input);
+    $stmt = $conn->prepare("SELECT ID, Email, Password, role FROM admin WHERE Email = ? OR PhoneNumber = ?");
+    $stmt->bind_param("ss", $login_input, $login_input);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        $admin = $result->fetch_assoc();
-        if (password_verify($password, $admin['Password'])) {
-            $_SESSION['admin_id'] = $admin['ID'];
-            $_SESSION['admin_name'] = $admin['FullName'];
-            $_SESSION['adminId'] = $admin['ID'];
-            $_SESSION['logged_in'] = true; // Thêm để đồng bộ với users.php
-            header("Location: users.php?lang=$selectedLang"); // Chuyển hướng kèm tham số ngôn ngữ
-            exit();
+        $user = $result->fetch_assoc();
+        if (password_verify($password, $user['Password'])) {
+            $_SESSION['logged_in'] = true;
+            $_SESSION['user_id'] = $user['ID'];
+            $_SESSION['email'] = $user['Email'];
+            $_SESSION['role'] = $user['role'];
+            // Chuyển hướng dựa trên role
+            $redirect = ($user['role'] === 'admin') ? 'users.php' : 'manage.php';
+            echo json_encode(['success' => true, 'redirect' => $redirect]);
         } else {
-            $login_error = $languages[$selectedLang]['error_invalid_password'];
+            echo json_encode(['success' => false, 'error' => 'Mật khẩu không đúng']);
         }
     } else {
-        $login_error = $languages[$selectedLang]['error_invalid_credentials'];
+        echo json_encode(['success' => false, 'error' => 'Email hoặc số điện thoại không tồn tại']);
     }
 
     $stmt->close();
+    $conn->close();
+    exit;
 }
-
-$conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="<?php echo $selectedLang; ?>">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $languages[$selectedLang]['title']; ?></title>
+    <title>Đăng nhập</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         input:focus, select:focus {
@@ -105,32 +78,52 @@ $conn->close();
     <div class="absolute top-4 right-4">
         <form id="language-form" method="POST" action="login.php">
             <select name="lang" onchange="this.form.submit()" class="bg-gray-800 text-gray-200 border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="en" <?php echo $selectedLang === 'en' ? 'selected' : ''; ?>>English</option>
-                <option value="vi" <?php echo $selectedLang === 'vi' ? 'selected' : ''; ?>>Tiếng Việt</option>
+                <option value="en">English</option>
+                <option value="vi">Tiếng Việt</option>
             </select>
         </form>
     </div>
     <div class="w-full max-w-md bg-white rounded-lg shadow-xl p-8 relative">
         <img src="https://sme.hust.edu.vn/wp-content/uploads/2022/02/Avatar-Facebook-trang.jpg" alt="Avatar" class="avatar-img">
-        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6 mt-12"><?php echo $languages[$selectedLang]['title']; ?></h2>
-        <?php if ($login_error): ?>
-            <div class="bg-red-100 text-red-600 p-3 rounded-md mb-4 text-center"><?php echo htmlspecialchars($login_error); ?></div>
-        <?php endif; ?>
+        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6 mt-12">Đăng nhập</h2>
         <form method="POST" action="login.php" id="login-form">
-            <input type="hidden" name="lang" value="<?php echo $selectedLang; ?>">
             <div class="mb-4">
-                <label for="login_input" class="block text-gray-700 font-medium mb-2"><?php echo $languages[$selectedLang]['login_input_label']; ?></label>
-                <input type="text" id="login_input" name="login_input" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <label for="login_input" class="block text-gray-700 font-medium mb-2">Email hoặc Số điện thoại</label>
+                <input type="text" class="form-control w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="login_input" name="login_input" placeholder="Nhập email hoặc số điện thoại" required>
             </div>
             <div class="mb-6">
-                <label for="password" class="block text-gray-700 font-medium mb-2"><?php echo $languages[$selectedLang]['password_label']; ?></label>
-                <input type="password" id="password" name="password" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <label for="password" class="block text-gray-700 font-medium mb-2">Mật khẩu</label>
+                <input type="password" class="form-control w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="password" name="password" placeholder="Nhập mật khẩu" required>
             </div>
-            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md font-medium hover:bg-blue-700 transition duration-300"><?php echo $languages[$selectedLang]['login_button']; ?></button>
-            <div class="mt-4 text-center">
-                <a href="restore.php" class="text-blue-600 hover:underline"><?php echo $languages[$selectedLang]['forgot_password']; ?></a>
-            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md font-medium hover:bg-blue-700 transition duration-300">Đăng nhập</button>
         </form>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('login_input', document.getElementById('login_input').value); // Sử dụng login_input thay vì email
+            formData.append('password', document.getElementById('password').value);
+
+            fetch('login.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Đăng nhập thất bại: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                alert('Có lỗi xảy ra khi đăng nhập.');
+            });
+        });
+    </script>
 </body>
 </html>
