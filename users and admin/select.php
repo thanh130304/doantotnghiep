@@ -1,31 +1,31 @@
-<?php
+<!-- <?php
 session_start();
 
 // Kiểm tra xem người dùng đã đăng nhập và có vai trò là manager hay không
-if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in'] || $_SESSION['role'] !== 'manager') {
-    header("Location: login.php");
-    exit;
-}
+// if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in'] || $_SESSION['role'] !== 'manager') {
+//     header("Location: login.php");
+//     exit;
+// }
 
-$selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'vi';
+// $selectedLang = isset($_GET['lang']) ? $_GET['lang'] : 'vi';
 
-$languages = [
-    'en' => [
-        'title' => 'Select Management Area',
-        'select_area' => 'Select Management Area',
-        'staff' => 'Staff',
-        'student' => 'Student',
-        'please_select' => 'Please select an area to manage.',
-    ],
-    'vi' => [
-        'title' => 'Chọn Vùng Quản Lý',
-        'select_area' => 'Chọn Vùng Quản Lý',
-        'staff' => 'Nhân Viên',
-        'student' => 'Sinh Viên',
-        'please_select' => 'Vui lòng chọn một vùng để quản lý.',
-    ]
-];
-?>
+// $languages = [
+//     'en' => [
+//         'title' => 'Select Management Area',
+//         'select_area' => 'Select Management Area',
+//         'staff' => 'Staff',
+//         'student' => 'Student',
+//         'please_select' => 'Please select an area to manage.',
+//     ],
+//     'vi' => [
+//         'title' => 'Chọn Vùng Quản Lý',
+//         'select_area' => 'Chọn Vùng Quản Lý',
+//         'staff' => 'Nhân Viên',
+//         'student' => 'Sinh Viên',
+//         'please_select' => 'Vui lòng chọn một vùng để quản lý.',
+//     ]
+// ];
+// ?>
 
 <!DOCTYPE html>
 <html lang="<?php echo $selectedLang; ?>">
@@ -86,4 +86,4 @@ $languages = [
         });
     </script>
 </body>
-</html>
+</html> -->

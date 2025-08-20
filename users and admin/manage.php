@@ -157,6 +157,21 @@ $result = $stmt->get_result();
             width: 100%;
             box-sizing: border-box;
         }
+
+        .user-icon {
+            transition: filter 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-icon:hover {
+            filter: hue-rotate(90deg) saturate(2);
+            transform: scale(1.1);
+        }
+
+        .user-icon:active {
+            filter: hue-rotate(90deg) saturate(2) brightness(0.8);
+            transform: scale(1);
+        }
     </style>
 </head>
 <body>
@@ -196,7 +211,9 @@ $result = $stmt->get_result();
             <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Staff Management List</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-toolbar mb-2 mb-md-0 d-flex align-items-center">
+                        <img src="https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png"
+                            alt="User Icon" class="img-fluid me-3 user-icon" style="max-height: 40px;" title="Profile" onclick="window.location.href='profile.php'">
                         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
                             <i class="fas fa-plus me-1"></i>Add Staff
                         </button>
@@ -362,7 +379,7 @@ $result = $stmt->get_result();
                         </div>
                         <div class="mb-3">
                             <label for="editStaffRole" class="form-label">Role</label>
-                            <select class="form-select" id="editStaffRole">
+                            <select classichier="form-select" id="editStaffRole">
                                 <option value="manager">Manager</option>
                                 <option value="staff">Staff</option>
                             </select>

@@ -185,6 +185,21 @@ $result = $stmt->get_result();
             width: 100%;
             box-sizing: border-box;
         }
+
+        .user-icon {
+            transition: filter 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-icon:hover {
+            filter: hue-rotate(90deg) saturate(2);
+            transform: scale(1.1);
+        }
+
+        .user-icon:active {
+            filter: hue-rotate(90deg) saturate(2) brightness(0.8);
+            transform: scale(1);
+        }
     </style>
 </head>
 
@@ -228,7 +243,11 @@ $result = $stmt->get_result();
                 <div
                     class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Student Management List</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-toolbar mb-2 mb-md-0 d-flex align-items-center">
+                        <a href="profile.php" class="me-3">
+                            <img src="https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png"
+                                alt="User Icon" class="img-fluid user-icon" style="max-height: 40px;" title="Profile">
+                        </a>
                         <button class="btn btn-sm btn-primary" id="add-student-btn">
                             <i class="fas fa-plus me-1"></i>Add Student
                         </button>
@@ -387,7 +406,8 @@ $result = $stmt->get_result();
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="addStudent()">Save</button>
+                    <button type="button" class="btn btn-primary" onclick="addStudent()">Save</button
+
                 </div>
             </div>
         </div>
