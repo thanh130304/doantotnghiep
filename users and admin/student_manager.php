@@ -331,10 +331,10 @@ $result = $stmt->get_result();
                                                             <input type='hidden' name='status_" . $row['id'] . "' value='" . $row['status'] . "'>
                                                         </td>
                                                         <td>
-                                                            <button type='button' class='btn btn-sm btn-edit' data-bs-toggle='modal' data-bs-target='#editStudentModal' onclick=\"loadStudentData('" . $row['id'] . "', '" . htmlspecialchars($row['full_name']) . "', '" . htmlspecialchars($row['phone_number']) . "', '" . htmlspecialchars($row['year_of_birth']) . "', '" . htmlspecialchars($row['facility']) . "', '" . htmlspecialchars($row['email']) . "')\">
+                                                            <button type='button' class='btn btn-sm btn-edit' onclick=\"handleEditClick('" . $row['id'] . "', '" . htmlspecialchars($row['full_name']) . "', '" . htmlspecialchars($row['phone_number']) . "', '" . htmlspecialchars($row['year_of_birth']) . "', '" . htmlspecialchars($row['facility']) . "', '" . htmlspecialchars($row['email']) . "')\">
                                                                 <i class='fas fa-edit'></i>
                                                             </button>
-                                                            <button type='button' class='btn btn-sm btn-delete' data-bs-toggle='modal' data-bs-target='#deleteConfirmModal' onclick=\"setDeleteId('" . $row['id'] . "')\">
+                                                            <button type='button' class='btn btn-sm btn-delete' onclick=\"handleDeleteClick('" . $row['id'] . "')\">
                                                                 <i class='fas fa-trash'></i>
                                                             </button>
                                                         </td>
@@ -406,8 +406,7 @@ $result = $stmt->get_result();
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="addStudent()">Save</button
-
+                    <button type="button" class="btn btn-primary" onclick="addStudent()">Save</button>
                 </div>
             </div>
         </div>
@@ -683,6 +682,30 @@ $result = $stmt->get_result();
             url.searchParams.set('status', status);
             url.searchParams.set('sort', sort);
             window.location = url;
+        }
+
+        function handleEditClick(id, full_name, phone_number, year_of_birth, facility, email) {
+            if (isLoggedIn) {
+                loadStudentData(id, full_name, phone_number, year_of_birth, facility, email);
+                const editStudentModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+                editStudentModal.show();
+            } else {
+                if (confirm('Please login before accessing')) {
+                    window.location.href = 'login.php';
+                }
+            }
+        }
+
+        function handleDeleteClick(id) {
+            if (isLoggedIn) {
+                setDeleteId(id);
+                const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                deleteConfirmModal.show();
+            } else {
+                if (confirm('Please login before accessing')) {
+                    window.location.href = 'login.php';
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
